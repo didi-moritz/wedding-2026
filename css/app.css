@@ -1,0 +1,338 @@
+:root {
+  --bg-deep: #0b1f14;
+  --bg-mid: #163528;
+  --accent: #c8f06a;
+  --accent-soft: #9fd44a;
+  --text: #f2f7ef;
+  --text-muted: rgba(242, 247, 239, 0.72);
+  --cell: #f7faf4;
+  --cell-text: #102316;
+  --cell-border: #2a4a38;
+  --cell-focus: #c8f06a;
+  --cell-solution: #dff58a;
+  --panel: rgba(8, 24, 16, 0.55);
+  --btn-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #2a5a3d 0%, transparent 55%),
+    radial-gradient(90% 60% at 100% 100%, #1a4030 0%, transparent 50%),
+    linear-gradient(165deg, var(--bg-mid), var(--bg-deep) 55%, #07140e);
+}
+
+a {
+  color: var(--accent);
+}
+
+.page {
+  width: min(40rem, 100%);
+  margin: 0 auto;
+  padding:
+    calc(1.25rem + var(--safe-top))
+    calc(1.25rem + var(--safe-right))
+    calc(1.5rem + var(--safe-bottom))
+    calc(1.25rem + var(--safe-left));
+}
+
+.page--center {
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
+  gap: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+h1 {
+  margin: 0 0 0.6rem;
+  font-size: clamp(2rem, 8vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.lede {
+  margin: 0 0 1.5rem;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  line-height: 1.45;
+  max-width: 28rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0.85rem 1.4rem;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--primary {
+  color: #102316;
+  background: linear-gradient(180deg, #dff58a 0%, var(--accent) 45%, var(--accent-soft) 100%);
+  box-shadow: var(--btn-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.btn--ghost {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.topbar a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.topbar a:hover {
+  color: var(--text);
+}
+
+.puzzle-head h1 {
+  font-size: clamp(1.6rem, 6vw, 2.2rem);
+}
+
+.solution-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  background: var(--panel);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.solution-bar strong {
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.solution-word {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  min-height: 1.5rem;
+}
+
+.solution-word.is-complete {
+  color: var(--accent);
+}
+
+.board-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -0.25rem 1.5rem;
+  padding: 0.25rem;
+}
+
+.board {
+  display: grid;
+  gap: 3px;
+  width: max-content;
+  margin: 0 auto;
+  background: var(--cell-border);
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.board > div {
+  position: relative;
+  width: min(12vw, 2.75rem);
+  height: min(12vw, 2.75rem);
+  min-width: 2.4rem;
+  min-height: 2.4rem;
+}
+
+.cell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: var(--cell);
+  color: var(--cell-text);
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  border-radius: 3px;
+  caret-color: transparent;
+}
+
+.cell:focus {
+  outline: 3px solid var(--cell-focus);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.cell--block {
+  background: transparent;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.cell--solution {
+  background: var(--cell-solution);
+}
+
+.cell-num {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #3d5c4a;
+  pointer-events: none;
+}
+
+.clues {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .clues {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.clue-group h2 {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.clue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.clue {
+  display: grid;
+  grid-template-columns: 1.75rem 1fr;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.clue.is-active {
+  border-color: rgba(200, 240, 106, 0.55);
+  background: rgba(200, 240, 106, 0.1);
+}
+
+.clue.is-done {
+  opacity: 0.55;
+}
+
+.clue-num {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.clue-text {
+  line-height: 1.35;
+}
+
+.instruction-card {
+  padding: 1.25rem 1.35rem;
+  border-radius: 1.15rem;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.instruction-card p {
+  margin: 0 0 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+}
+
+.instruction-card p:last-child {
+  margin-bottom: 0;
+}
+
+.error-box {
+  padding: 1rem 1.1rem;
+  border-radius: 0.85rem;
+  background: rgba(120, 30, 30, 0.45);
+  color: #ffd7d7;
+  line-height: 1.4;
+}
