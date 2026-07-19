@@ -1,7 +1,7 @@
 /**
  * AUTO-GENERIERT — nicht von Hand editieren.
- * Quelle: data/puzzle.source.js
- * Erzeugen: node scripts/build-puzzle.mjs
+ * Quelle: data/puzzle.source.js (lokal, nicht im Repo)
+ * Erzeugen: ./scripts/build-puzzle.sh
  *
  * Enthält KEINE Antworten, nur length + Fragen + solutionPath.
  */
@@ -61,7 +61,7 @@ window.PUZZLE = {
     "body": [
       "Habt ihr das Lösungswort gefunden?",
       "Sagt es dem Trauzeugen — er weiß, was als Nächstes passiert.",
-      "(Text in data/puzzle.source.js unter instruction anpassen, dann Build laufen lassen.)"
+      "(Text in data/puzzle.source.js anpassen, dann ./scripts/build-puzzle.sh)"
     ]
   }
 };

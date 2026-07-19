@@ -1,0 +1,5 @@
+# Local editor file with answers — never commit
+data/puzzle.source.js
+
+# IDE
+.idea/

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /**
+ * Intern von ./scripts/build-puzzle.sh aufgerufen.
  * Liest data/puzzle.source.js (mit Antworten),
  * prüft Kreuzungen, schreibt data/puzzle.js ohne Antworten.
  */
@@ -95,8 +96,8 @@ function writePuzzleJs(publicPuzzle) {
   const body = JSON.stringify(publicPuzzle, null, 2);
   const file = `/**
  * AUTO-GENERIERT — nicht von Hand editieren.
- * Quelle: data/puzzle.source.js
- * Erzeugen: node scripts/build-puzzle.mjs
+ * Quelle: data/puzzle.source.js (lokal, nicht im Repo)
+ * Erzeugen: ./scripts/build-puzzle.sh
  *
  * Enthält KEINE Antworten, nur length + Fragen + solutionPath.
  */

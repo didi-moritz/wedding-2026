@@ -1,11 +1,8 @@
 /**
- * EDITOR-DATEI — hier Rätsel anpassen (inkl. Antworten).
+ * VORLAGE — kopieren nach data/puzzle.source.js (wird nicht committed).
  *
- * Vor Deploy / lokal testen:
- *   node scripts/build-puzzle.mjs
- *
- * Erzeugt data/puzzle.js OHNE Antworten (nur length).
- * puzzle.source.js wird nicht auf GitHub Pages veröffentlicht.
+ *   cp data/puzzle.source.example.js data/puzzle.source.js
+ *   ./scripts/build-puzzle.sh
  *
  * clues: id, direction ("across"|"down"), row, col, answer, clue
  * solutionPath: [{ r, c }, ...] → Lösungswort-Zellen
@@ -49,7 +46,7 @@ window.PUZZLE = {
     },
   ],
 
-  // Markierte Zellen → Lösungswort TREUE (nur Positionen landen im Deploy)
+  // Markierte Zellen → Lösungswort TREUE (nur Positionen landen in puzzle.js)
   solutionPath: [
     { r: 0, c: 4 },
     { r: 1, c: 4 },
@@ -63,7 +60,7 @@ window.PUZZLE = {
     body: [
       "Habt ihr das Lösungswort gefunden?",
       "Sagt es dem Trauzeugen — er weiß, was als Nächstes passiert.",
-      "(Text in data/puzzle.source.js unter instruction anpassen, dann Build laufen lassen.)",
+      "(Text in data/puzzle.source.js anpassen, dann ./scripts/build-puzzle.sh)",
     ],
   },
 };
