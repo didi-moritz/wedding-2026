@@ -25,6 +25,13 @@
     return ch.toUpperCase().replace(/[^A-ZÄÖÜ]/g, "").slice(0, 1);
   }
 
+  function clueLength(clue) {
+    if (Number.isFinite(clue.length) && clue.length > 0) return clue.length;
+    // Fallback für lokales Editieren mit answer noch in puzzle.js
+    const answer = String(clue.answer || "").replace(/\s+/g, "");
+    return answer.length;
+  }
+
   function buildModel(data) {
     const cells = new Map();
     const errors = [];
@@ -38,40 +45,26 @@
         continue;
       }
 
-      const answer = String(clue.answer || "")
-        .toUpperCase()
-        .replace(/\s+/g, "");
-
-      if (!answer) {
-        errors.push(`Leere Antwort bei Frage ${clue.id}`);
+      const length = clueLength(clue);
+      if (!length) {
+        errors.push(`Länge fehlt bei Frage ${clue.id}`);
         continue;
       }
 
-      clue._answer = answer;
       clue._cells = [];
 
-      for (let i = 0; i < answer.length; i++) {
+      for (let i = 0; i < length; i++) {
         const r = clue.row + delta.dr * i;
         const c = clue.col + delta.dc * i;
         const key = `${r},${c}`;
-        const letter = answer[i];
-        const existing = cells.get(key);
 
-        if (existing && existing.letter !== letter) {
-          errors.push(
-            `Konflikt bei (${r},${c}): „${existing.letter}“ vs „${letter}“ (Frage ${clue.id})`
-          );
-        }
-
-        const cell = existing || {
+        const cell = cells.get(key) || {
           r,
           c,
-          letter,
           number: null,
           isSolution: false,
           value: "",
         };
-        cell.letter = letter;
         cells.set(key, cell);
         clue._cells.push(cell);
         maxR = Math.max(maxR, r);
@@ -207,16 +200,13 @@
       if (!solutionEl) return;
       const letters = model.solutionKeys.map((key) => model.cells.get(key)?.value || "·");
       solutionEl.textContent = letters.join("");
-      const complete = model.solutionKeys.every((key) => {
-        const cell = model.cells.get(key);
-        return cell && cell.value === cell.letter;
-      });
-      solutionEl.classList.toggle("is-complete", complete);
+      const filled = model.solutionKeys.every((key) => model.cells.get(key)?.value);
+      solutionEl.classList.toggle("is-complete", filled);
     }
 
     function updateClueDoneState() {
       for (const clue of puzzle.clues) {
-        const done = cellsForClue(clue).every((c) => c.value === c.letter);
+        const done = cellsForClue(clue).every((c) => c.value);
         document
           .querySelector(`.clue[data-id="${clue.id}"]`)
           ?.classList.toggle("is-done", done);
