@@ -2,11 +2,6 @@
   const puzzle = window.PUZZLE;
   if (!puzzle) return;
 
-  const dirDelta = {
-    across: { dr: 0, dc: 1 },
-    down: { dr: 1, dc: 0 },
-  };
-
   function escapeHtml(str) {
     return String(str)
       .replace(/&/g, "&amp;")
@@ -25,66 +20,12 @@
     return ch.toUpperCase().replace(/[^A-ZÄÖÜ]/g, "").slice(0, 1);
   }
 
-  function clueLength(clue) {
-    if (Number.isFinite(clue.length) && clue.length > 0) return clue.length;
-    // Fallback für lokales Editieren mit answer noch in puzzle.js
-    const answer = String(clue.answer || "").replace(/\s+/g, "");
-    return answer.length;
-  }
-
-  function buildModel(data) {
-    const cells = new Map();
-    const errors = [];
-    let maxR = 0;
-    let maxC = 0;
-
-    for (const clue of data.clues) {
-      const delta = dirDelta[clue.direction];
-      if (!delta) {
-        errors.push(`Unbekannte Richtung bei Frage ${clue.id}: ${clue.direction}`);
-        continue;
-      }
-
-      const length = clueLength(clue);
-      if (!length) {
-        errors.push(`Länge fehlt bei Frage ${clue.id}`);
-        continue;
-      }
-
-      clue._cells = [];
-
-      for (let i = 0; i < length; i++) {
-        const r = clue.row + delta.dr * i;
-        const c = clue.col + delta.dc * i;
-        const key = `${r},${c}`;
-
-        const cell = cells.get(key) || {
-          r,
-          c,
-          number: null,
-          isSolution: false,
-          value: "",
-        };
-        cells.set(key, cell);
-        clue._cells.push(cell);
-        maxR = Math.max(maxR, r);
-        maxC = Math.max(maxC, c);
-      }
-
-      const start = cells.get(`${clue.row},${clue.col}`);
-      if (start) {
-        start.number = start.number == null ? clue.id : Math.min(start.number, clue.id);
-      }
-    }
-
-    const solutionKeys = (data.solutionPath || []).map(({ r, c }) => `${r},${c}`);
-    for (const key of solutionKeys) {
-      const cell = cells.get(key);
-      if (!cell) errors.push(`solutionPath trifft leere Zelle: ${key}`);
-      else cell.isSolution = true;
-    }
-
-    return { cells, maxR, maxC, errors, solutionKeys };
+  // Web Crypto SHA-256 helper
+  async function computeHash(text) {
+    const msgBuffer = new TextEncoder().encode(text);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
   }
 
   function renderInstructionPage() {
@@ -99,262 +40,338 @@
     root.innerHTML = body.map((p) => `<p>${escapeHtml(p)}</p>`).join("");
   }
 
-  function initCrossword() {
-    const boardEl = document.getElementById("board");
-    const cluesEl = document.getElementById("clues");
-    const solutionEl = document.getElementById("solution-word");
+  function initQuiz() {
+    const quizContainer = document.getElementById("quiz-container");
+    const finalContainer = document.getElementById("final-container");
+    const progressEl = document.getElementById("quiz-progress");
+    const questionEl = document.getElementById("quiz-question");
+    const inputRowEl = document.getElementById("quiz-input-row");
+    const btnNext = document.getElementById("btn-next");
+    const feedbackOverlay = document.getElementById("feedback-overlay");
+    const feedbackText = document.getElementById("feedback-text");
     const titleEl = document.getElementById("puzzle-title");
     const subtitleEl = document.getElementById("puzzle-subtitle");
-    const errorEl = document.getElementById("puzzle-error");
+    const canvas = document.getElementById("celebration-canvas");
 
-    if (!boardEl || !cluesEl) return;
+    if (!quizContainer || !finalContainer || !inputRowEl || !btnNext) return;
 
-    if (titleEl) titleEl.textContent = puzzle.title || "Kreuzworträtsel";
+    if (titleEl) titleEl.textContent = puzzle.title || "Hochzeit-Rätsel";
     if (subtitleEl) subtitleEl.textContent = puzzle.subtitle || "";
 
-    const model = buildModel(puzzle);
-    if (model.errors.length && errorEl) {
-      errorEl.hidden = false;
-      errorEl.textContent = model.errors.join(" · ");
-      console.error(model.errors);
-    }
+    let currentClueIndex = 0;
+    let isVerifying = false;
 
-    let activeClueId = puzzle.clues[0]?.id ?? null;
-    const inputEls = new Map();
+    function renderQuestion() {
+      const clue = puzzle.clues[currentClueIndex];
+      if (!clue) return;
 
-    boardEl.style.gridTemplateColumns = `repeat(${model.maxC + 1}, minmax(2.4rem, 2.75rem))`;
+      // Update progress & question
+      progressEl.textContent = `Frage ${currentClueIndex + 1} von ${puzzle.clues.length}`;
+      questionEl.textContent = clue.clue;
 
-    for (let r = 0; r <= model.maxR; r++) {
-      for (let c = 0; c <= model.maxC; c++) {
-        const key = `${r},${c}`;
-        const cell = model.cells.get(key);
+      // Clear & rebuild inputs
+      inputRowEl.innerHTML = "";
+      const inputs = [];
 
-        if (!cell) {
-          const block = document.createElement("div");
-          block.className = "cell cell--block";
-          block.setAttribute("aria-hidden", "true");
-          boardEl.appendChild(block);
-          continue;
-        }
-
-        const wrap = document.createElement("div");
-        wrap.style.position = "relative";
-
-        if (cell.number != null) {
-          const num = document.createElement("span");
-          num.className = "cell-num";
-          num.textContent = String(cell.number);
-          wrap.appendChild(num);
-        }
-
+      for (let i = 0; i < clue.length; i++) {
         const input = document.createElement("input");
-        input.className = "cell" + (cell.isSolution ? " cell--solution" : "");
+        input.className = "cell";
         input.type = "text";
         input.inputMode = "text";
         input.autocomplete = "off";
         input.autocapitalize = "characters";
         input.spellcheck = false;
         input.maxLength = 1;
-        input.dataset.r = String(r);
-        input.dataset.c = String(c);
-        input.setAttribute(
-          "aria-label",
-          `Feld${cell.number != null ? " " + cell.number : ""} Zeile ${r + 1}, Spalte ${c + 1}`
-        );
+        input.dataset.index = i;
+        input.setAttribute("aria-label", `Buchstabe ${i + 1} von ${clue.length}`);
 
-        wrap.appendChild(input);
-        boardEl.appendChild(wrap);
-        inputEls.set(key, input);
-      }
-    }
+        inputRowEl.appendChild(input);
+        inputs.push(input);
 
-    function clueById(id) {
-      return puzzle.clues.find((c) => c.id === id);
-    }
+        // Auto-advance
+        input.addEventListener("input", (e) => {
+          const val = normalizeLetter(input.value);
+          input.value = val;
+          if (val && i < clue.length - 1) {
+            inputs[i + 1].focus();
+          }
+        });
 
-    function cellsForClue(clue) {
-      return clue?._cells || [];
-    }
-
-    function highlightClue() {
-      document.querySelectorAll(".clue").forEach((el) => {
-        el.classList.toggle("is-active", Number(el.dataset.id) === activeClueId);
-      });
-    }
-
-    function focusCell(r, c) {
-      inputEls.get(`${r},${c}`)?.focus();
-    }
-
-    function setActiveClue(id, focusFirstEmpty = true) {
-      activeClueId = id;
-      highlightClue();
-      const clue = clueById(id);
-      if (!clue) return;
-      const cells = cellsForClue(clue);
-      const target = focusFirstEmpty ? cells.find((c) => !c.value) || cells[0] : cells[0];
-      if (target) focusCell(target.r, target.c);
-    }
-
-    function updateSolution() {
-      if (!solutionEl) return;
-      const letters = model.solutionKeys.map((key) => model.cells.get(key)?.value || "·");
-      solutionEl.textContent = letters.join("");
-      const filled = model.solutionKeys.every((key) => model.cells.get(key)?.value);
-      solutionEl.classList.toggle("is-complete", filled);
-    }
-
-    function updateClueDoneState() {
-      for (const clue of puzzle.clues) {
-        const done = cellsForClue(clue).every((c) => c.value);
-        document
-          .querySelector(`.clue[data-id="${clue.id}"]`)
-          ?.classList.toggle("is-done", done);
-      }
-    }
-
-    function moveWithinClue(fromR, fromC, step) {
-      const cells = cellsForClue(clueById(activeClueId));
-      const idx = cells.findIndex((c) => c.r === fromR && c.c === fromC);
-      const next = cells[idx + step];
-      if (next) focusCell(next.r, next.c);
-      return next;
-    }
-
-    function onLetter(r, c, raw) {
-      const key = `${r},${c}`;
-      const cell = model.cells.get(key);
-      const input = inputEls.get(key);
-      if (!cell || !input) return;
-
-      const letter = normalizeLetter(raw);
-      cell.value = letter;
-      input.value = letter;
-      updateSolution();
-      updateClueDoneState();
-      if (letter) moveWithinClue(r, c, 1);
-    }
-
-    function renderClues() {
-      const across = puzzle.clues.filter((c) => c.direction === "across");
-      const down = puzzle.clues.filter((c) => c.direction === "down");
-
-      function group(title, list) {
-        if (!list.length) return "";
-        const items = list
-          .map(
-            (c) => `
-          <li>
-            <button type="button" class="clue" data-id="${c.id}">
-              <span class="clue-num">${c.id}</span>
-              <span class="clue-text">${escapeHtml(c.clue)}</span>
-            </button>
-          </li>`
-          )
-          .join("");
-        return `
-          <section class="clue-group">
-            <h2>${title}</h2>
-            <ul class="clue-list">${items}</ul>
-          </section>`;
-      }
-
-      cluesEl.innerHTML = group("Waagerecht", across) + group("Senkrecht", down);
-      cluesEl.querySelectorAll(".clue").forEach((btn) => {
-        btn.addEventListener("click", () => setActiveClue(Number(btn.dataset.id)));
-      });
-    }
-
-    renderClues();
-
-    for (const [key, input] of inputEls) {
-      const [r, c] = key.split(",").map(Number);
-
-      input.addEventListener("focus", () => {
-        const owning = puzzle.clues.filter((clue) =>
-          cellsForClue(clue).some((cell) => cell.r === r && cell.c === c)
-        );
-        if (!owning.some((clue) => clue.id === activeClueId) && owning[0]) {
-          activeClueId = owning[0].id;
-        }
-        highlightClue();
-      });
-
-      input.addEventListener("beforeinput", (e) => {
-        if (e.inputType === "insertText" && e.data) {
-          e.preventDefault();
-          onLetter(r, c, e.data);
-        }
-      });
-
-      input.addEventListener("input", () => {
-        const v = input.value;
-        if (!v) {
-          const cell = model.cells.get(key);
-          if (cell) cell.value = "";
-          updateSolution();
-          updateClueDoneState();
-          return;
-        }
-        onLetter(r, c, v.slice(-1));
-      });
-
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Backspace") {
-          e.preventDefault();
-          const cell = model.cells.get(key);
-          if (cell?.value) {
-            cell.value = "";
-            input.value = "";
-            updateSolution();
-            updateClueDoneState();
-          } else {
-            const prev = moveWithinClue(r, c, -1);
-            if (prev) {
-              prev.value = "";
-              const prevInput = inputEls.get(`${prev.r},${prev.c}`);
-              if (prevInput) prevInput.value = "";
-              updateSolution();
-              updateClueDoneState();
+        // Auto-backspace
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Backspace") {
+            e.preventDefault();
+            if (input.value) {
+              input.value = "";
+            } else if (i > 0) {
+              inputs[i - 1].value = "";
+              inputs[i - 1].focus();
             }
           }
-          return;
-        }
+        });
 
-        if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-          const acrossClue = puzzle.clues.find(
-            (clue) =>
-              clue.direction === "across" &&
-              cellsForClue(clue).some((cell) => cell.r === r && cell.c === c)
-          );
-          if (acrossClue) {
-            e.preventDefault();
-            activeClueId = acrossClue.id;
-            highlightClue();
-            moveWithinClue(r, c, e.key === "ArrowRight" ? 1 : -1);
-          }
-        }
+        // Select text on focus
+        input.addEventListener("focus", () => {
+          input.select();
+        });
+      }
 
-        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-          const downClue = puzzle.clues.find(
-            (clue) =>
-              clue.direction === "down" &&
-              cellsForClue(clue).some((cell) => cell.r === r && cell.c === c)
-          );
-          if (downClue) {
-            e.preventDefault();
-            activeClueId = downClue.id;
-            highlightClue();
-            moveWithinClue(r, c, e.key === "ArrowDown" ? 1 : -1);
-          }
-        }
-      });
+      // Focus the first input box
+      if (inputs[0]) inputs[0].focus();
     }
 
-    updateSolution();
-    if (activeClueId != null) setActiveClue(activeClueId, true);
+    async function checkAnswer() {
+      if (isVerifying) return;
+      
+      const clue = puzzle.clues[currentClueIndex];
+      if (!clue) return;
+
+      const inputs = Array.from(inputRowEl.querySelectorAll("input"));
+      const rawAnswer = inputs.map(input => input.value).join("");
+      const normalizedAnswer = rawAnswer.toUpperCase().replace(/\s+/g, "");
+
+      if (normalizedAnswer.length < clue.length) {
+        // Focus first empty input
+        const emptyInput = inputs.find(input => !input.value);
+        if (emptyInput) emptyInput.focus();
+        return;
+      }
+
+      isVerifying = true;
+      const userHash = await computeHash(normalizedAnswer);
+
+      if (userHash === clue.hash) {
+        // Show correct overlay
+        feedbackText.textContent = "RICHTIG";
+        feedbackText.className = "feedback-text correct";
+        feedbackOverlay.hidden = false;
+        
+        // Force reflow and add pop animation
+        feedbackText.offsetHeight;
+        feedbackText.classList.add("pop");
+
+        setTimeout(() => {
+          feedbackOverlay.hidden = true;
+          feedbackText.classList.remove("pop");
+          currentClueIndex++;
+          isVerifying = false;
+
+          if (currentClueIndex < puzzle.clues.length) {
+            renderQuestion();
+          } else {
+            showFinalScreen();
+          }
+        }, 1200);
+      } else {
+        // Show wrong overlay
+        feedbackText.textContent = "FALSCH";
+        feedbackText.className = "feedback-text wrong";
+        feedbackOverlay.hidden = false;
+        
+        // Force reflow and add pop animation
+        feedbackText.offsetHeight;
+        feedbackText.classList.add("pop");
+
+        setTimeout(() => {
+          feedbackOverlay.hidden = true;
+          feedbackText.classList.remove("pop");
+          
+          // Clear all inputs
+          inputs.forEach(input => { input.value = ""; });
+          if (inputs[0]) inputs[0].focus();
+          isVerifying = false;
+        }, 1500);
+      }
+    }
+
+    function showFinalScreen() {
+      quizContainer.hidden = true;
+      finalContainer.hidden = false;
+      if (titleEl) titleEl.textContent = "Geschafft!";
+      if (subtitleEl) subtitleEl.hidden = true;
+      
+      startCelebration();
+    }
+
+    function startCelebration() {
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const rockets = [];
+      const particles = [];
+      const fallingItems = [];
+      const emojis = ["💸", "💵", "💰", "🪙"];
+
+      // Setup classes
+      class Rocket {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = height;
+          this.tx = Math.random() * width;
+          this.ty = Math.random() * (height * 0.45) + height * 0.05;
+          const angle = Math.atan2(this.ty - this.y, this.tx - this.x);
+          const speed = Math.random() * 5 + 10;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+          this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vy += 0.05; // Gravity on launch
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = this.color;
+          ctx.fill();
+          ctx.shadowBlur = 0; // reset
+        }
+      }
+
+      class Particle {
+        constructor(x, y, color) {
+          this.x = x;
+          this.y = y;
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 5 + 2;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+          this.gravity = 0.08;
+          this.alpha = 1;
+          this.fade = Math.random() * 0.015 + 0.01;
+          this.color = color;
+          this.size = Math.random() * 2 + 1.5;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vy += this.gravity;
+          this.alpha -= this.fade;
+        }
+
+        draw() {
+          ctx.save();
+          ctx.globalAlpha = this.alpha;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.shadowBlur = 6;
+          ctx.shadowColor = this.color;
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      class FallingItem {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = -50;
+          this.vy = Math.random() * 2.5 + 1.5;
+          this.rotation = Math.random() * Math.PI * 2;
+          this.vRotation = Math.random() * 0.04 - 0.02;
+          this.emoji = emojis[Math.floor(Math.random() * emojis.length)];
+          this.fontSize = Math.floor(Math.random() * 16) + 24; // 24px - 40px
+        }
+
+        update() {
+          this.y += this.vy;
+          this.rotation += this.vRotation;
+        }
+
+        draw() {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+          ctx.font = `${this.fontSize}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(this.emoji, 0, 0);
+          ctx.restore();
+        }
+      }
+
+      function loop() {
+        ctx.clearRect(0, 0, width, height);
+
+        // 1. Spawning
+        if (Math.random() < 0.04 && rockets.length < 5) {
+          rockets.push(new Rocket());
+        }
+        if (Math.random() < 0.06 && fallingItems.length < 50) {
+          fallingItems.push(new FallingItem());
+        }
+
+        // 2. Rockets
+        for (let i = rockets.length - 1; i >= 0; i--) {
+          const r = rockets[i];
+          r.update();
+          r.draw();
+
+          // Explode check
+          if (r.vy >= 0 || r.y <= r.ty) {
+            // Explode!
+            const count = Math.floor(Math.random() * 30) + 50;
+            for (let j = 0; j < count; j++) {
+              particles.push(new Particle(r.x, r.y, r.color));
+            }
+            rockets.splice(i, 1);
+          }
+        }
+
+        // 3. Particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.update();
+          if (p.alpha <= 0) {
+            particles.splice(i, 1);
+          } else {
+            p.draw();
+          }
+        }
+
+        // 4. Falling Emojis
+        for (let i = fallingItems.length - 1; i >= 0; i--) {
+          const item = fallingItems[i];
+          item.update();
+          item.draw();
+
+          if (item.y > height + 50) {
+            fallingItems.splice(i, 1);
+          }
+        }
+
+        requestAnimationFrame(loop);
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    // Connect Weiter button and global Enter keypress
+    btnNext.addEventListener("click", checkAnswer);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        checkAnswer();
+      }
+    });
+
+    renderQuestion();
   }
 
   if (document.body.dataset.page === "instruction") renderInstructionPage();
-  if (document.body.dataset.page === "puzzle") initCrossword();
+  if (document.body.dataset.page === "puzzle") initQuiz();
 })();

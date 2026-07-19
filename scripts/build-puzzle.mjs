@@ -2,11 +2,12 @@
 /**
  * Intern von ./scripts/build-puzzle.sh aufgerufen.
  * Liest data/puzzle.source.js (mit Antworten),
- * prüft Kreuzungen, schreibt data/puzzle.js ohne Antworten.
+ * validiert die Fragen und schreibt data/puzzle.js mit SHA-256 Hashes der Antworten.
  */
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
+import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -14,10 +15,9 @@ const root = path.join(__dirname, "..");
 const sourcePath = path.join(root, "data", "puzzle.source.js");
 const outPath = path.join(root, "data", "puzzle.js");
 
-const dirDelta = {
-  across: { dr: 0, dc: 1 },
-  down: { dr: 1, dc: 0 },
-};
+function sha256(text) {
+  return crypto.createHash("sha256").update(text).digest("hex");
+}
 
 function loadSource() {
   const code = fs.readFileSync(sourcePath, "utf8");
@@ -30,44 +30,31 @@ function loadSource() {
 }
 
 function validate(puzzle) {
-  const cells = new Map();
   const errors = [];
+  const seenIds = new Set();
 
   for (const clue of puzzle.clues || []) {
-    const delta = dirDelta[clue.direction];
-    if (!delta) {
-      errors.push(`Frage ${clue.id}: unbekannte direction „${clue.direction}“`);
+    if (clue.id == null) {
+      errors.push(`Eine Frage hat keine ID`);
       continue;
     }
+    if (seenIds.has(clue.id)) {
+      errors.push(`Doppelte ID gefunden: ${clue.id}`);
+    }
+    seenIds.add(clue.id);
+
     const answer = String(clue.answer || "")
       .toUpperCase()
       .replace(/\s+/g, "");
     if (!answer) {
       errors.push(`Frage ${clue.id}: answer fehlt`);
-      continue;
     }
-
-    for (let i = 0; i < answer.length; i++) {
-      const r = clue.row + delta.dr * i;
-      const c = clue.col + delta.dc * i;
-      const key = `${r},${c}`;
-      const letter = answer[i];
-      if (cells.has(key) && cells.get(key) !== letter) {
-        errors.push(
-          `Konflikt (${r},${c}): „${cells.get(key)}“ vs „${letter}“ (Frage ${clue.id})`
-        );
-      }
-      cells.set(key, letter);
+    if (!clue.clue) {
+      errors.push(`Frage ${clue.id}: clue fehlt`);
     }
   }
 
-  for (const { r, c } of puzzle.solutionPath || []) {
-    if (!cells.has(`${r},${c}`)) {
-      errors.push(`solutionPath trifft leere Zelle: (${r},${c})`);
-    }
-  }
-
-  return { cells, errors };
+  return { errors };
 }
 
 function toPublic(puzzle) {
@@ -80,14 +67,11 @@ function toPublic(puzzle) {
         .replace(/\s+/g, "");
       return {
         id: clue.id,
-        direction: clue.direction,
-        row: clue.row,
-        col: clue.col,
-        length: answer.length || Number(clue.length) || 0,
+        length: answer.length,
         clue: clue.clue,
+        hash: sha256(answer),
       };
     }),
-    solutionPath: puzzle.solutionPath || [],
     instruction: puzzle.instruction || { title: "Anleitung", body: [] },
   };
 }
@@ -99,7 +83,7 @@ function writePuzzleJs(publicPuzzle) {
  * Quelle: data/puzzle.source.js (lokal, nicht im Repo)
  * Erzeugen: ./scripts/build-puzzle.sh
  *
- * Enthält KEINE Antworten, nur length + Fragen + solutionPath.
+ * Enthält KEINE Klartext-Antworten, sondern deren Längen und SHA-256 Hashes.
  */
 window.PUZZLE = ${body};
 `;
@@ -107,16 +91,13 @@ window.PUZZLE = ${body};
 }
 
 const puzzle = loadSource();
-const { cells, errors } = validate(puzzle);
+const { errors } = validate(puzzle);
 
 if (errors.length) {
   console.error("Build fehlgeschlagen:\n- " + errors.join("\n- "));
   process.exit(1);
 }
 
-const solution = (puzzle.solutionPath || [])
-  .map(({ r, c }) => cells.get(`${r},${c}`))
-  .join("");
-
 writePuzzleJs(toPublic(puzzle));
-console.log(`OK → data/puzzle.js (${cells.size} Zellen, Lösungswort-Länge ${solution.length})`);
+console.log(`OK → data/puzzle.js (${puzzle.clues.length} Fragen erfolgreich verarbeitet und gehasht)`);
+

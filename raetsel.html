@@ -9,34 +9,60 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#0b1f14" />
-  <title>Kreuzworträtsel</title>
+  <title>Hochzeit-Rätsel</title>
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body data-page="puzzle">
+  <!-- Canvas for celebration animations (fireworks/money rain) -->
+  <canvas id="celebration-canvas" class="celebration-canvas"></canvas>
+
   <main class="page">
     <div class="topbar">
-      <a href="index.html">← Start</a>
+      <a href="index.html" id="back-home">← Start</a>
       <a href="anleitung.html">Anleitung</a>
     </div>
 
     <header class="puzzle-head">
-      <h1 id="puzzle-title">Kreuzworträtsel</h1>
+      <h1 id="puzzle-title">Hochzeit-Rätsel</h1>
       <p class="lede" id="puzzle-subtitle"></p>
     </header>
 
     <div id="puzzle-error" class="error-box" hidden></div>
 
-    <div class="solution-bar">
-      <strong>Lösungswort</strong>
-      <div class="solution-word" id="solution-word" aria-live="polite">·····</div>
+    <!-- Sequential Quiz Container -->
+    <div id="quiz-container" class="quiz-container">
+      <div class="quiz-progress" id="quiz-progress">Frage 1 von 10</div>
+      
+      <div class="quiz-card">
+        <p class="quiz-question" id="quiz-question">Frage wird geladen...</p>
+        
+        <div class="quiz-input-row" id="quiz-input-row" role="group" aria-label="Antwort eingeben">
+          <!-- Text input boxes will be generated dynamically -->
+        </div>
+      </div>
+
+      <div class="actions actions--center">
+        <button class="btn btn--primary btn--wide" id="btn-next" type="button">Weiter</button>
+      </div>
     </div>
 
-    <div class="board-wrap">
-      <div class="board" id="board" role="grid" aria-label="Kreuzworträtsel"></div>
+    <!-- Final screen container (initially hidden) -->
+    <div id="final-container" class="final-container" hidden>
+      <div class="final-card">
+        <span class="final-emoji">🎉💰🎉</span>
+        <h2>Herzlichen Glückwunsch!</h2>
+        <p class="final-message">Schicke <strong>CASHOUT</strong> an Tanja für deinen Gewinn!</p>
+        <div class="actions actions--center" style="margin-top: 2rem">
+          <a class="btn btn--primary" href="index.html">Nochmal spielen</a>
+        </div>
+      </div>
     </div>
-
-    <div class="clues" id="clues"></div>
   </main>
+
+  <!-- Fullscreen Feedback Overlay -->
+  <div id="feedback-overlay" class="feedback-overlay" hidden>
+    <div id="feedback-text" class="feedback-text"></div>
+  </div>
 
   <script src="js/fullscreen.js"></script>
   <script src="data/puzzle.js"></script>
