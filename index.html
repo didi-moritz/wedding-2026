@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+  />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0b1f14" />
+  <title>Klick mich!</title>
+  <style>
+    :root {
+      --bg-deep: #0b1f14;
+      --bg-mid: #163528;
+      --accent: #c8f06a;
+      --accent-soft: #9fd44a;
+      --text: #f2f7ef;
+      --text-muted: rgba(242, 247, 239, 0.72);
+      --btn-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-deep);
+      color: var(--text);
+      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+    }
+
+    body {
+      position: relative;
+      min-height: 100dvh;
+      background:
+        radial-gradient(120% 80% at 50% -10%, #2a5a3d 0%, transparent 55%),
+        radial-gradient(90% 60% at 100% 100%, #1a4030 0%, transparent 50%),
+        linear-gradient(165deg, var(--bg-mid), var(--bg-deep) 55%, #07140e);
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding:
+        calc(24px + var(--safe-top))
+        calc(24px + var(--safe-right))
+        calc(24px + var(--safe-bottom))
+        calc(24px + var(--safe-left));
+      z-index: 2;
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+    }
+
+    .stage.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro {
+      text-align: center;
+      max-width: 20rem;
+    }
+
+    .intro h1 {
+      margin: 0 0 0.35rem;
+      font-size: clamp(2.4rem, 9vw, 3.4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+
+    .intro p {
+      margin: 0 0 1.75rem;
+      font-size: 1.05rem;
+      line-height: 1.45;
+      color: var(--text-muted);
+    }
+
+    .cta {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      min-width: min(100%, 17rem);
+      min-height: 3.75rem;
+      padding: 0.95rem 1.75rem;
+      font: inherit;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: #102316;
+      background: linear-gradient(180deg, #dff58a 0%, var(--accent) 45%, var(--accent-soft) 100%);
+      box-shadow: var(--btn-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform 0.18s ease, filter 0.18s ease;
+    }
+
+    .cta:active {
+      transform: scale(0.97);
+      filter: brightness(0.96);
+    }
+
+    .cta:focus-visible {
+      outline: 3px solid rgba(200, 240, 106, 0.55);
+      outline-offset: 4px;
+    }
+
+    #rain {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    #rain.is-active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .bill {
+      position: absolute;
+      top: -12vh;
+      left: 0;
+      font-size: 2rem;
+      line-height: 1;
+      will-change: transform;
+      user-select: none;
+      filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.28));
+      animation-name: fall;
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+        opacity: 0;
+      }
+      8% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate3d(var(--drift), 118vh, 0) rotate(var(--spin));
+        opacity: 0.85;
+      }
+    }
+
+    .exit {
+      position: fixed;
+      top: calc(12px + var(--safe-top));
+      right: calc(12px + var(--safe-right));
+      z-index: 3;
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      width: 2.75rem;
+      height: 2.75rem;
+      font-size: 1.35rem;
+      line-height: 1;
+      color: var(--text);
+      background: rgba(8, 24, 16, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.18s ease;
+      touch-action: manipulation;
+    }
+
+    .exit.is-visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .exit:active {
+      transform: scale(0.94);
+    }
+
+    .hint {
+      position: fixed;
+      left: 50%;
+      bottom: calc(20px + var(--safe-bottom));
+      z-index: 3;
+      transform: translateX(-50%);
+      margin: 0;
+      padding: 0.55rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: rgba(8, 24, 16, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .hint.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bill {
+        animation-duration: 8s !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <div class="intro">
+      <h1>Bereit?</h1>
+      <p>Tippe den Button — Vollbild &amp; Geldregen starten.</p>
+      <button class="cta" id="start" type="button">Klick mich!</button>
+    </div>
+  </main>
+
+  <div id="rain" aria-hidden="true"></div>
+  <button class="exit" id="exit" type="button" aria-label="Beenden">×</button>
+  <p class="hint" id="hint">Nochmal tippen zum Beenden</p>
+
+  <script>
+    (() => {
+      const MONEY = ["💵", "💶", "💷", "💴", "💰", "🪙", "💸"];
+      const stage = document.getElementById("stage");
+      const rain = document.getElementById("rain");
+      const startBtn = document.getElementById("start");
+      const exitBtn = document.getElementById("exit");
+      const hint = document.getElementById("hint");
+
+      let raining = false;
+      let spawnTimer = null;
+      let activeCount = 0;
+      const MAX_BILLS = 48;
+
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function pick(arr) {
+        return arr[(Math.random() * arr.length) | 0];
+      }
+
+      async function enterFullscreen() {
+        const el = document.documentElement;
+        try {
+          if (document.fullscreenElement) return true;
+          if (el.requestFullscreen) {
+            await el.requestFullscreen({ navigationUI: "hide" });
+            return true;
+          }
+          if (el.webkitRequestFullscreen) {
+            el.webkitRequestFullscreen();
+            return true;
+          }
+        } catch (_) {
+          /* iOS / blocked — viewport cover still works */
+        }
+        return false;
+      }
+
+      async function exitFullscreen() {
+        try {
+          if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        } catch (_) {}
+      }
+
+      function spawnBill() {
+        if (!raining || activeCount >= MAX_BILLS) return;
+
+        const bill = document.createElement("span");
+        bill.className = "bill";
+        bill.textContent = pick(MONEY);
+
+        const size = 1.5 + Math.random() * 2.2;
+        const left = Math.random() * 100;
+        const duration = (reducedMotion ? 5.5 : 2.8) + Math.random() * (reducedMotion ? 3 : 3.6);
+        const delay = Math.random() * 0.35;
+        const drift = (Math.random() * 40 - 20).toFixed(1) + "vw";
+        const spin = (Math.random() * 720 - 360).toFixed(0) + "deg";
+
+        bill.style.left = left + "vw";
+        bill.style.fontSize = size + "rem";
+        bill.style.setProperty("--drift", drift);
+        bill.style.setProperty("--spin", spin);
+        bill.style.animationDuration = duration + "s";
+        bill.style.animationDelay = delay + "s";
+
+        rain.appendChild(bill);
+        activeCount += 1;
+
+        const cleanup = () => {
+          bill.remove();
+          activeCount = Math.max(0, activeCount - 1);
+        };
+        bill.addEventListener("animationend", cleanup, { once: true });
+      }
+
+      function startRain() {
+        if (raining) return;
+        raining = true;
+        stage.classList.add("is-hidden");
+        rain.classList.add("is-active");
+        exitBtn.classList.add("is-visible");
+        hint.classList.add("is-visible");
+        setTimeout(() => hint.classList.remove("is-visible"), 2800);
+
+        const burst = reducedMotion ? 10 : 18;
+        for (let i = 0; i < burst; i++) {
+          setTimeout(spawnBill, i * 45);
+        }
+
+        const interval = reducedMotion ? 220 : 110;
+        spawnTimer = setInterval(spawnBill, interval);
+      }
+
+      function stopRain() {
+        if (!raining) return;
+        raining = false;
+        clearInterval(spawnTimer);
+        spawnTimer = null;
+        rain.classList.remove("is-active");
+        exitBtn.classList.remove("is-visible");
+        hint.classList.remove("is-visible");
+        stage.classList.remove("is-hidden");
+        rain.replaceChildren();
+        activeCount = 0;
+        exitFullscreen();
+      }
+
+      async function onStart() {
+        await enterFullscreen();
+        startRain();
+      }
+
+      startBtn.addEventListener("click", onStart);
+      exitBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        stopRain();
+      });
+      rain.addEventListener("click", stopRain);
+
+      document.addEventListener("fullscreenchange", () => {
+        if (!document.fullscreenElement && raining) stopRain();
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden && raining) {
+          clearInterval(spawnTimer);
+          spawnTimer = null;
+        } else if (!document.hidden && raining && !spawnTimer) {
+          spawnTimer = setInterval(spawnBill, reducedMotion ? 220 : 110);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
