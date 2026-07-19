@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
   />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#0b1f14" />
   <title>Hochzeit-Rätsel</title>
   <link rel="stylesheet" href="css/app.css" />
@@ -20,10 +22,11 @@
         die markierten Kästchen ergeben das Lösungswort.
       </p>
       <div class="actions">
-        <a class="btn btn--primary" href="raetsel.html">Rätsel starten</a>
+        <a class="btn btn--primary" id="start-puzzle" href="raetsel.html">Rätsel starten</a>
         <a class="btn btn--ghost" href="anleitung.html">Anleitung</a>
       </div>
     </div>
   </main>
+  <script src="js/fullscreen.js"></script>
 </body>
 </html>
