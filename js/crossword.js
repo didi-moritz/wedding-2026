@@ -208,7 +208,7 @@
       const rockets = [];
       const particles = [];
       const fallingItems = [];
-      const emojis = ["💸", "💵", "💰", "🪙"];
+      const emojis = ["💶", "💵", "💰"];
 
       // Setup classes
       class Rocket {
