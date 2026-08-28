@@ -20,7 +20,7 @@ window.PUZZLE = {
       "id": 2,
       "length": 27,
       "pattern": "ooo oooooooooooo oooooooooooo",
-      "clue": "Wie heißt der genaue Beruf von Tanja?",
+      "clue": "Wie lautet die genaue Berufsbezeichnung von Tanja?",
       "hash": "a6b5b9932b1ea30eb24a603ff576cf0ed6ded448ad6493b1a4e7362a9c6ad126"
     },
     {
