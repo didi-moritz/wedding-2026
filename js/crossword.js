@@ -67,7 +67,8 @@
 
       // Update progress & question
       progressEl.textContent = `Frage ${currentClueIndex + 1} von ${puzzle.clues.length}`;
-      questionEl.textContent = clue.clue;
+      // Update question text; insert zero‑width space after hyphens to allow line‑breaks while keeping the dash visible
+      questionEl.innerHTML = clue.clue.replace(/-/g, '-&#8203;');
 
       // Clear & rebuild inputs
       inputRowEl.innerHTML = "";
