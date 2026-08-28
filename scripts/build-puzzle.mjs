@@ -62,14 +62,15 @@ function toPublic(puzzle) {
     title: puzzle.title,
     subtitle: puzzle.subtitle,
     clues: (puzzle.clues || []).map((clue) => {
-      const answer = String(clue.answer || "")
-        .toUpperCase()
-        .replace(/\s+/g, "");
+      const rawAnswer = String(clue.answer || "").toUpperCase();
+      const cleanAnswer = rawAnswer.replace(/\s+/g, "");
+      const pattern = rawAnswer.split("").map(char => char === " " ? " " : "o").join("");
       return {
         id: clue.id,
-        length: answer.length,
+        length: cleanAnswer.length,
+        pattern: pattern,
         clue: clue.clue,
-        hash: sha256(answer),
+        hash: sha256(cleanAnswer),
       };
     }),
     instruction: puzzle.instruction || { title: "Anleitung", body: [] },

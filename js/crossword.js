@@ -72,49 +72,59 @@
       // Clear & rebuild inputs
       inputRowEl.innerHTML = "";
       const inputs = [];
+      const pattern = clue.pattern || "o".repeat(clue.length);
 
-      for (let i = 0; i < clue.length; i++) {
-        const input = document.createElement("input");
-        input.className = "cell";
-        input.type = "text";
-        input.inputMode = "text";
-        input.autocomplete = "off";
-        input.autocapitalize = "characters";
-        input.spellcheck = false;
-        input.maxLength = 1;
-        input.dataset.index = i;
-        input.setAttribute("aria-label", `Buchstabe ${i + 1} von ${clue.length}`);
+      const words = pattern.split(" ");
+      words.forEach((wordPattern) => {
+        const wordRow = document.createElement("div");
+        wordRow.className = "word-row";
+        inputRowEl.appendChild(wordRow);
 
-        inputRowEl.appendChild(input);
-        inputs.push(input);
+        for (let i = 0; i < wordPattern.length; i++) {
+          const input = document.createElement("input");
+          input.className = "cell";
+          input.type = "text";
+          input.inputMode = "text";
+          input.autocomplete = "off";
+          input.autocapitalize = "characters";
+          input.spellcheck = false;
+          input.maxLength = 1;
+          
+          const currentIdx = inputs.length;
+          input.dataset.index = currentIdx;
+          input.setAttribute("aria-label", `Buchstabe ${currentIdx + 1} von ${clue.length}`);
 
-        // Auto-advance
-        input.addEventListener("input", (e) => {
-          const val = normalizeLetter(input.value);
-          input.value = val;
-          if (val && i < clue.length - 1) {
-            inputs[i + 1].focus();
-          }
-        });
+          wordRow.appendChild(input);
+          inputs.push(input);
 
-        // Auto-backspace
-        input.addEventListener("keydown", (e) => {
-          if (e.key === "Backspace") {
-            e.preventDefault();
-            if (input.value) {
-              input.value = "";
-            } else if (i > 0) {
-              inputs[i - 1].value = "";
-              inputs[i - 1].focus();
+          // Auto-advance
+          input.addEventListener("input", (e) => {
+            const val = normalizeLetter(input.value);
+            input.value = val;
+            if (val && currentIdx < clue.length - 1) {
+              inputs[currentIdx + 1].focus();
             }
-          }
-        });
+          });
 
-        // Select text on focus
-        input.addEventListener("focus", () => {
-          input.select();
-        });
-      }
+          // Auto-backspace
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace") {
+              e.preventDefault();
+              if (input.value) {
+                input.value = "";
+              } else if (currentIdx > 0) {
+                inputs[currentIdx - 1].value = "";
+                inputs[currentIdx - 1].focus();
+              }
+            }
+          });
+
+          // Select text on focus
+          input.addEventListener("focus", () => {
+            input.select();
+          });
+        }
+      });
 
       // Focus the first input box
       if (inputs[0]) inputs[0].focus();

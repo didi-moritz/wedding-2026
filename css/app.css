@@ -413,17 +413,24 @@ h1 {
 
 .quiz-input-row {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   padding: 0.5rem 0.25rem;
 }
 
+.word-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+
 .quiz-input-row .cell {
-  width: 2.25rem;
-  height: 2.25rem;
-  font-size: 1.25rem;
-  border-radius: 6px;
+  width: 1.95rem;
+  height: 1.95rem;
+  font-size: 1.1rem;
+  border-radius: 5px;
   background: var(--cell);
   color: var(--cell-text);
   text-align: center;
