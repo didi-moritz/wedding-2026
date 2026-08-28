@@ -446,6 +446,13 @@ h1 {
   background: #ffffff;
 }
 
+.quiz-input-row--small .cell {
+  width: min(6.5vw, 1.45rem);
+  height: min(6.5vw, 1.45rem);
+  font-size: min(4vw, 0.9rem);
+  border-radius: 4px;
+}
+
 .btn--wide {
   width: 100%;
   max-width: 20rem;

@@ -71,6 +71,11 @@
 
       // Clear & rebuild inputs
       inputRowEl.innerHTML = "";
+      if (clue.id === 2) {
+        inputRowEl.classList.add("quiz-input-row--small");
+      } else {
+        inputRowEl.classList.remove("quiz-input-row--small");
+      }
       const inputs = [];
       const pattern = clue.pattern || "o".repeat(clue.length);
 
