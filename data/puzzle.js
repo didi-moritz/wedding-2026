@@ -19,7 +19,7 @@ window.PUZZLE = {
     {
       "id": 2,
       "length": 27,
-      "pattern": "ooo oooooooooooo oooooooooooo",
+      "pattern": "ooo-oooooooooooo oooooooooooo",
       "clue": "Wie lautet die genaue Berufsbezeichnung von Tanja?",
       "hash": "a6b5b9932b1ea30eb24a603ff576cf0ed6ded448ad6493b1a4e7362a9c6ad126"
     },
@@ -67,17 +67,17 @@ window.PUZZLE = {
     },
     {
       "id": 9,
-      "length": 10,
-      "pattern": "oooooooooo",
-      "clue": "Von welcher steirischen Baufirma ist das Haus von Familie Moritz gebaut worden?",
-      "hash": "0367e2f55dc2d3e4cd683b19bec4988f79207513b0d446701f788824d55e3033"
-    },
-    {
-      "id": 10,
       "length": 13,
       "pattern": "oooo ooooooooo",
       "clue": "In welchem Gebäude ist das Gemeindeamt von Pottendorf?",
       "hash": "6b5ab682bd74d5e7d810339ecf974f62707233936aab85c127638e3d47c2da51"
+    },
+    {
+      "id": 10,
+      "length": 10,
+      "pattern": "oooooooooo",
+      "clue": "Von welcher steirischen Baufirma ist das Haus von Familie Moritz gebaut worden?",
+      "hash": "0367e2f55dc2d3e4cd683b19bec4988f79207513b0d446701f788824d55e3033"
     }
   ],
   "instruction": {
