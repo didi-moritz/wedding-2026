@@ -11,10 +11,10 @@ window.PUZZLE = {
   "clues": [
     {
       "id": 1,
-      "length": 17,
-      "pattern": "oooooooo ooooooooo",
-      "clue": "Wie heißt Olivias Lehrerin?",
-      "hash": "a55753e530f0835d3de275ca97061129d45c7f0196465680a3449b920fa100c7"
+      "length": 11,
+      "pattern": "ooooooooooo",
+      "clue": "In welchem Bezirk fand die Hochzeit von Tanja und Didi statt?",
+      "hash": "ca5b9130581336d87bc8070df6b2506700715322b00a8ec38730ec7db43b455a"
     },
     {
       "id": 2,
@@ -39,10 +39,10 @@ window.PUZZLE = {
     },
     {
       "id": 5,
-      "length": 11,
-      "pattern": "ooooooooooo",
-      "clue": "In welchem Bezirk fand die Hochzeit von Tanja und Didi statt?",
-      "hash": "ca5b9130581336d87bc8070df6b2506700715322b00a8ec38730ec7db43b455a"
+      "length": 17,
+      "pattern": "oooooooo ooooooooo",
+      "clue": "Wie heißt Olivias Lehrerin?",
+      "hash": "a55753e530f0835d3de275ca97061129d45c7f0196465680a3449b920fa100c7"
     },
     {
       "id": 6,
