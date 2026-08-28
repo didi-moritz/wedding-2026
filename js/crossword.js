@@ -2,13 +2,6 @@
   const puzzle = window.PUZZLE;
   if (!puzzle) return;
 
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
 
   function normalizeLetter(ch) {
     if (!ch) return "";
@@ -28,17 +21,6 @@
     return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
   }
 
-  function renderInstructionPage() {
-    const root = document.getElementById("instruction-root");
-    if (!root) return;
-
-    const info = puzzle.instruction || {};
-    const title = document.getElementById("instruction-title");
-    if (title) title.textContent = info.title || "Anleitung";
-
-    const body = Array.isArray(info.body) ? info.body : [String(info.body || "")];
-    root.innerHTML = body.map((p) => `<p>${escapeHtml(p)}</p>`).join("");
-  }
 
   function initQuiz() {
     const quizContainer = document.getElementById("quiz-container");
@@ -388,6 +370,5 @@
     renderQuestion();
   }
 
-  if (document.body.dataset.page === "instruction") renderInstructionPage();
   if (document.body.dataset.page === "puzzle") initQuiz();
 })();

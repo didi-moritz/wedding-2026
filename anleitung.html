@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#0b1f14" />
-  <title>Anleitung</title>
+  <title>Anleitung – Hochzeit-Rätsel</title>
   <link rel="stylesheet" href="css/app.css" />
 </head>
-<body data-page="instruction">
+
+<body>
   <main class="page">
     <div class="topbar">
       <a href="index.html">← Start</a>
@@ -18,9 +20,17 @@
     </div>
 
     <p class="eyebrow">Hilfe</p>
-    <h1 id="instruction-title">Anleitung</h1>
+    <h1>Anleitung</h1>
 
-    <div class="instruction-card" id="instruction-root"></div>
+    <div class="instruction-card">
+      <p>Beantwortet alle Fragen der Reihe nach.</p>
+      <p>Tragt die richtige Antwort Buchstabe für Buchstabe in die Kästchen ein (Umlaute wie Ä, Ö, Ü werden in ein
+        einzelnes Kästchen eingetragen, statt einem scharfen ß schreibt zwei S).</p>
+      <p>Klickt auf <strong>Weiter</strong>, um eure Antwort zu überprüfen.</p>
+      <p>Bei einer falschen Antwort müsst ihr es erneut versuchen. Wenn alle Fragen richtig sind, wartet eine
+        Überraschung auf euch!</p>
+      <p>Viel Erfolg!</p>
+    </div>
 
     <div class="actions" style="margin-top: 1.5rem">
       <a class="btn btn--primary" href="raetsel.html">Zurück zum Rätsel</a>
@@ -28,7 +38,6 @@
   </main>
 
   <script src="js/fullscreen.js"></script>
-  <script src="data/puzzle.js"></script>
-  <script src="js/crossword.js"></script>
 </body>
+
 </html>
