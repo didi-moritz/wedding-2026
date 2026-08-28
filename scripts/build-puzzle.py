@@ -65,8 +65,8 @@ def main():
     public_clues = []
     for c in clues:
         raw_answer = c["answer"].upper()
-        clean_answer = re.sub(r'\s+', '', raw_answer)
-        pattern = "".join(" " if char == " " else "o" for char in raw_answer)
+        clean_answer = re.sub(r'[\s\-]+', '', raw_answer)
+        pattern = "".join("-" if char == "-" else " " if char == " " else "o" for char in raw_answer)
         public_clues.append({
             "id": c["id"],
             "length": len(clean_answer),

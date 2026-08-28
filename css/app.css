@@ -426,6 +426,16 @@ h1 {
   width: 100%;
 }
 
+.word-sep {
+  width: 100%;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1;
+  margin: 2px 0;
+}
+
 .quiz-input-row .cell {
   width: 1.95rem;
   height: 1.95rem;

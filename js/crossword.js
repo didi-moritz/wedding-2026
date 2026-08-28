@@ -62,13 +62,38 @@
       const inputs = [];
       const pattern = clue.pattern || "o".repeat(clue.length);
 
-      const words = pattern.split(" ");
-      words.forEach((wordPattern) => {
+      // Split pattern into tokens: word segments ("ooo") and separators (" " or "-")
+      const tokens = [];
+      let current = "";
+      for (const ch of pattern) {
+        if (ch === " " || ch === "-") {
+          if (current) tokens.push({ type: "word", pattern: current });
+          tokens.push({ type: "sep", char: ch });
+          current = "";
+        } else {
+          current += ch;
+        }
+      }
+      if (current) tokens.push({ type: "word", pattern: current });
+
+      tokens.forEach((token) => {
+        if (token.type === "sep") {
+          if (token.char === "-") {
+            // Render a visible hyphen between word rows
+            const sep = document.createElement("div");
+            sep.className = "word-sep";
+            sep.textContent = "-";
+            inputRowEl.appendChild(sep);
+          }
+          // spaces just cause the next token to start a new word-row (no element needed)
+          return;
+        }
+
         const wordRow = document.createElement("div");
         wordRow.className = "word-row";
         inputRowEl.appendChild(wordRow);
 
-        for (let i = 0; i < wordPattern.length; i++) {
+        for (let i = 0; i < token.pattern.length; i++) {
           const input = document.createElement("input");
           input.className = "cell";
           input.type = "text";
@@ -77,7 +102,7 @@
           input.autocapitalize = "characters";
           input.spellcheck = false;
           input.maxLength = 1;
-          
+
           const currentIdx = inputs.length;
           input.dataset.index = currentIdx;
           input.setAttribute("aria-label", `Buchstabe ${currentIdx + 1} von ${clue.length}`);

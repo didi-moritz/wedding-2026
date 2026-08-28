@@ -47,22 +47,22 @@ window.PUZZLE = {
     {
       "id": 6,
       "length": 17,
-      "pattern": "ooo ooooooooo ooooo",
-      "clue": "In welche Schule wird Clara gehen?/In welche Schule geht Clara?",
+      "pattern": "ooo ooooooooo-ooooo",
+      "clue": "In welche Schule geht Clara seit/ab September?",
       "hash": "0eec02a78a623aa98e74020706531b9aad999469d12a98d4f445158b6eed1299"
     },
     {
       "id": 7,
-      "length": 9,
-      "pattern": "ooooooooo",
+      "length": 3,
+      "pattern": "ooo",
       "clue": "Welche Farbe hat das neueste Auto von Familie Moritz?",
-      "hash": "dd0a4ed42e0f23df1034e34102a3c706b6ae2e7adb4adf3eeb759a5b00d3eff4"
+      "hash": "8b819df96b728f7f59f6b42903306b5507a7e6311ce998242a65bf535d126afc"
     },
     {
       "id": 8,
       "length": 9,
       "pattern": "ooooooooo",
-      "clue": "Welches Musikinstrument hat Tanja gespielt?/Welches Musikinstrument spielt Clara?",
+      "clue": "Welches Musikinstrument hat Tanja gespielt? Welches Musikinstrument spielt Clara?",
       "hash": "bb5b1160f99f5d97df5e286d09a961bf580269b2262d2a57d1bd34128b7b9e30"
     },
     {
